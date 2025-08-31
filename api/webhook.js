@@ -22,4 +22,35 @@ export default async function handler(req, res) {
   let update;
   try {
     update = JSON.parse(rawBody);
-  } catch (err)
+  } catch (err) {
+    console.error("Error parseando JSON:", rawBody);
+    return res.status(400).json({ ok: false, error: "Invalid JSON" });
+  }
+
+  try {
+    // DEBUG: log para ver qué llega desde Telegram
+    console.log("Update recibido:", JSON.stringify(update));
+
+    if (update.message && update.message.new_chat_members) {
+      for (const user of update.message.new_chat_members) {
+        const userId = user.id;
+        const chatId = update.message.chat.id;
+
+        const description = user?.bio || ""; // bio del perfil
+        if (/50-100x\+ charts!/i.test(description)) {
+          await fetch(`${TG_API}/banChatMember`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ chat_id: chatId, user_id: userId }),
+          });
+          console.log(`Usuario ${userId} baneado en chat ${chatId}`);
+        }
+      }
+    }
+
+    return res.status(200).json({ ok: true });
+  } catch (err) {
+    console.error("Error en handler:", err);
+    return res.status(500).json({ ok: false, error: err.message });
+  }
+}
