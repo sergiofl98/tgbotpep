@@ -1,9 +1,9 @@
-import fetch from "node-fetch";
+const fetch = require("node-fetch");
 
 const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
 const TG_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
 
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).send("Method Not Allowed");
 
   let rawBody = "";
@@ -25,15 +25,14 @@ export default async function handler(req, res) {
   try {
     console.log("Update recibido:", JSON.stringify(update));
 
-    // Revisar todos los mensajes enviados por usuarios
     if (update.message && update.message.from) {
       const userId = update.message.from.id;
       const chatId = update.message.chat.id;
-      const description = update.message.from?.bio || "";
-	  const test = JSON.stringify(update.message.from || {});
+      const description = (update.message.from && update.message.from.bio) || "";
+      const test = JSON.stringify(update.message.from || {});
 
       console.log(`Usuario ${userId} posteó algo. Bio: "${description}"`);
-	  console.log(`Usuario ${userId} posteó algo. From completo: ${test}`);
+      console.log(`Usuario ${userId} posteó algo. From completo: ${test}`);
 
       if (/50-100x\+ charts!/i.test(description)) {
         try {
@@ -49,12 +48,11 @@ export default async function handler(req, res) {
       }
     }
 
-    // También mantener la verificación de nuevos miembros
     if (update.message && update.message.new_chat_members) {
       for (const user of update.message.new_chat_members) {
         const userId = user.id;
         const chatId = update.message.chat.id;
-        const description = user?.bio || "";
+        const description = (user && user.bio) || "";
 
         if (/50-100x\+ charts!/i.test(description)) {
           try {
@@ -76,4 +74,4 @@ export default async function handler(req, res) {
     console.error("Error en handler:", err);
     return res.status(500).json({ ok: false, error: err.message });
   }
-}
+};
