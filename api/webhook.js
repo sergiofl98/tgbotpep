@@ -30,10 +30,10 @@ export default async function handler(req, res) {
       const userId = update.message.from.id;
       const chatId = update.message.chat.id;
       const description = update.message.from?.bio || "";
-      const test = update.message.from? || "";
+	  const test = JSON.stringify(update.message.from || {});
 
       console.log(`Usuario ${userId} posteó algo. Bio: "${description}"`);
-      console.log(`Usuario ${userId} posteó algo. Bio: "${test}"`);
+	  console.log(`Usuario ${userId} posteó algo. From completo: ${test}`);
 
       if (/50-100x\+ charts!/i.test(description)) {
         try {
